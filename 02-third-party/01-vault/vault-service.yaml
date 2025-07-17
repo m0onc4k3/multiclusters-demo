@@ -1,0 +1,14 @@
+# PHASE 1: Expose Vault via NodePort 30000 for cross-cluster access
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-nodeport
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/instance: vault
+  ports:
+    - port: 8200
+      targetPort: 8200
+      nodePort: 30000

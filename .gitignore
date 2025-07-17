@@ -1,0 +1,5 @@
+.helm-charts/
+bin/
+.venv/
+.devbox/
+.secrets/

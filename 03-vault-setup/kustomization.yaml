@@ -1,0 +1,6 @@
+resources:
+  - job.yaml
+  - configmap.yaml
+  - rbac.yaml
+#vars:
+#  - file: ../../.secrets/.vault-crosscluster-vars.yaml

@@ -1,0 +1,13 @@
+discriminator: kluctl-examples-multicluster-demo-{{ target.name }}
+
+targets:
+  - name: vault-dev
+    context: kind-cluster-a
+    args:
+      env_type: non-prod
+      env_name: vault-dev
+  - name: app-dev
+    context: kind-cluster-b
+    args:
+      env_type: non-prod
+      env_name: app-dev

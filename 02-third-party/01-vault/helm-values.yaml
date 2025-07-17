@@ -1,0 +1,4 @@
+# PHASE 1: Vault HELM chart values (dev mode)
+server:
+  dev:
+    enabled: true

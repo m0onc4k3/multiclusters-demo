@@ -1,0 +1,45 @@
+# PHASE 3: ConfigMap for Vault config script (vault-dev only)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-setup-script
+data:
+  configure-vault.sh: |
+    #!/bin/sh
+    set -e
+
+    VAULT_ADDR="http://vault:8200"
+    export VAULT_ADDR
+
+    # Wait for Vault to be ready
+    echo "Waiting for Vault to be ready..."
+    until vault status; do sleep 2; done
+
+    # Enable Kubernetes auth (ignore if already enabled)
+    vault auth enable kubernetes || true
+
+    # Configure Kubernetes auth with cluster-b details
+    vault write auth/kubernetes/config \
+      kubernetes_host="{{ cluster_b_api }}" \
+      kubernetes_ca_cert="{{ cluster_b_ca_cert | replace('\n', '\\n') }}" \
+      token_reviewer_jwt="{{ token_reviewer_jwt }}" || true
+
+    # Write policy for VSO
+    echo '
+    path "secret/data/*" {
+      capabilities = ["read","list"]
+    }' > /tmp/vault-secrets-operator-policy.hcl
+
+    vault policy write vault-secrets-operator /tmp/vault-secrets-operator-policy.hcl || true
+
+    # Create role for VSO
+    vault write auth/kubernetes/role/vault-secrets-operator \
+      bound_service_account_names=vault-secrets-operator \
+      bound_service_account_namespaces=ms-demo-app-dev \
+      policies=vault-secrets-operator \
+      ttl=1h || true
+
+    # Add a test secret
+    vault kv put secret/clusterb password="s3cr3t-p@ssw0rd" || true
+
+    echo "Vault configured for Kubernetes access"
