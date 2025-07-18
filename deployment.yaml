@@ -6,15 +6,16 @@ commonLabels:
   examples.kluctl.io/deployment-project: "microservices-demo"
   examples.kluctl.io/deployment-target: "{{ target.name }}"
 
+# PHASE 3: run extract_vault_vars.sh
 deployments:
   - path: 01-namespaces     # PHASE 1-2-4-5-6: Namespace creation
   - barrier: true # PHASE 1-2-4-5-6
-  #- path: 02-third-party/01-vault   # PHASE 1-5: Vault deployment (vault-dev only)
-  #- barrier: true # PHASE 5
-  - path: 02-third-party/02-vso/serviceaccount # PHASE 2-6: VSO serviceaccount (app-dev only)
-  - path: 02-third-party/02-vso/operator # PHASE 4-6:  VSO deployment (app-dev only)
-  #- path: 03-vault-setup    # PHASE 5: Vault configuration job (vault-dev only)
-  - path: 04-vaultsecret    # PHASE 6: VaultSecret CRD (app-dev only)
+  - path: 02-third-party/01-vault   # PHASE 1-5: Vault deployment (vault-dev only)
+  - barrier: true # PHASE 5
+  #- path: 02-third-party/02-vso/serviceaccount # PHASE 2-4-6: VSO serviceaccount (app-dev only)
+  #- path: 02-third-party/02-vso/operator # PHASE 4-6:  VSO deployment (app-dev only)
+  - path: 03-vault-setup    # PHASE 5: Vault configuration job (vault-dev only)
+  #- path: 04-vaultsecret    # PHASE 6: VaultSecret CRD (app-dev only)
 
 vars:
   - file: .secrets/.vault-crosscluster-vars.yaml
