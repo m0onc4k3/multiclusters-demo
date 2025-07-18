@@ -2,7 +2,7 @@
 bin/
 .venv/
 .devbox/
-gcloud/
 .secrets/vault-crosscluster-vars.yaml
+gcloud/
 devbox.json
 devbox.lock
