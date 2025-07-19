@@ -18,15 +18,14 @@ spec:
             - name: vault
               mountPath: /vault/configure-vault.sh
               subPath: configure-vault.sh
+            - name: vault
+              mountPath: /vault/cluster_b_ca_cert.pem
+              subPath: cluster_b_ca_cert.pem
           env:
             - name: VAULT_ADDR
               value: "http://vault:8200"
             - name: VAULT_TOKEN
               value: "{{ vault_root_token }}"
-              #valueFrom:
-              #  secretKeyRef:
-              #    name: vault-root-token
-              #    key: "{{ vault_root_token }}"
       volumes:
         - name: vault
           configMap:
