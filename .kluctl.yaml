@@ -1,13 +1,20 @@
 discriminator: kluctl-examples-multicluster-demo-{{ target.name }}
 
+# .kluctl.yaml
 targets:
-  - name: vault-dev
+  - name: dev
     context: kind-cluster-a
     args:
-      env_type: non-prod
-      env_name: vault-dev
-  - name: app-dev
-    context: kind-cluster-b
+      env_type: development
+      env_name: dev
+      vault_cluster: kind-cluster-a
+      app_cluster: kind-cluster-b
+      deployment_phase: "all"  # or specific phases for testing
+  - name: prod
+    context: kind-cluster-c
     args:
-      env_type: non-prod
-      env_name: app-dev
+      env_type: production
+      env_name: prod
+      vault_cluster: kind-cluster-c
+      app_cluster: kind-cluster-d
+      deployment_phase: "all"

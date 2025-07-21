@@ -7,7 +7,7 @@ kubectl config use-context kind-cluster-a
 
 echo "Extracting vault root token..."
 #VAULT_ROOT_TOKEN="root"
-VAULT_ROOT_TOKEN=$(kubectl logs vault-0 -n ms-demo-vault-dev | grep "Root Token:" | awk '{print $NF}')
+VAULT_ROOT_TOKEN=$(kubectl logs vault-0 -n ms-demo-dev | grep "Root Token:" | awk '{print $NF}')
 
 VARS_FILE="$(dirname "$0")/.vault-crosscluster-vars.yaml"
 
@@ -22,11 +22,11 @@ echo "Extracting cluster-b CA cert..."
 CLUSTER_B_CA_CERT=$(kubectl --context kind-cluster-b config view --raw -o jsonpath='{.clusters[?(@.name=="kind-cluster-b")].cluster.certificate-authority-data}' | base64 --decode)
 CLUSTER_B_CA_CERT_B64=$(echo "$CLUSTER_B_CA_CERT" | base64 | tr -d '\n')
 
-echo "Waiting for ServiceAccount 'vault-auth' in ms-demo-app-dev..."
-kubectl --context kind-cluster-b -n ms-demo-app-dev wait --for=condition=Ready serviceaccount/vault-auth --timeout=60s || true
+echo "Waiting for ServiceAccount 'vault-auth' in ms-demo-dev..."
+kubectl --context kind-cluster-b -n ms-demo-dev wait --for=condition=Ready serviceaccount/vault-auth --timeout=60s || true
 
 echo "Creating reviewer JWT..."
-TOKEN_REVIEWER_JWT=$(kubectl --context kind-cluster-b -n ms-demo-app-dev create token vault-auth --duration=8760h)
+TOKEN_REVIEWER_JWT=$(kubectl --context kind-cluster-b -n ms-demo-dev create token vault-auth --duration=8760h)
 
 cat > "$VARS_FILE" <<EOF
 vault_root_token: "$VAULT_ROOT_TOKEN"

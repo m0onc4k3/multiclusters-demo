@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: configure-vault
-  namespace: ms-demo-vault-dev
+  namespace: ms-demo-dev
 spec:
   ttlSecondsAfterFinished: 60
   template:

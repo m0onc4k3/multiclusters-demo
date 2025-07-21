@@ -35,7 +35,7 @@ data:
 
     vault write auth/kubernetes/role/vault-secrets-operator \
       bound_service_account_names=vault-secrets-operator \
-      bound_service_account_namespaces=ms-demo-app-dev \
+      bound_service_account_namespaces=ms-demo-dev \
       policies=vault-secrets-operator \
       ttl=1h || true
 
