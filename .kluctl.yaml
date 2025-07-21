@@ -1,6 +1,5 @@
 discriminator: kluctl-examples-multicluster-demo-{{ target.name }}
 
-# .kluctl.yaml
 targets:
   - name: dev
     context: kind-cluster-a
@@ -9,7 +8,7 @@ targets:
       env_name: dev
       vault_cluster: kind-cluster-a
       app_cluster: kind-cluster-b
-      deployment_phase: "all"  # or specific phases for testing
+      deployment_phase: "all"
   - name: prod
     context: kind-cluster-c
     args:

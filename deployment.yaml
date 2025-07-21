@@ -10,33 +10,33 @@ commonLabels:
 #       key: vault-vars.yaml
 #     when: "{{ args.deployment_phase in ['phase3'] }}"
 
-# deployment.yaml
 deployments:
-  # Phase 1: Prerequisites
+  # Create Namespace
   - path: 01-namespaces
-    when: "{{ args.deployment_phase in ['phase1', 'phase2','phase3'] }}"
+    when: "{{ args.deployment_phase in ['phase1', 'phase2','phase3','phase4'] }}"
   - barrier: true 
+  # Deploy Vault
   - path: 02-third-party/01-vault
-    when: "{{ args.deployment_phase in ['phase1', 'phase2'] and target.args.vault_cluster == target.context }}"
+    when: "{{ args.deployment_phase in ['phase1', 'phase2','phase3'] and target.args.vault_cluster == target.context }}"
   - barrier: true 
+  # Create VSO serviceaccount
   - path: 02-third-party/02-vso/serviceaccount
-    when: "{{ args.deployment_phase in ['phase1', 'phase2','phase3'] and target.args.app_cluster == target.context }}"
+    when: "{{ args.deployment_phase in ['phase1', 'phase2','phase3','phase4'] and target.args.app_cluster == target.context }}"
   - barrier: true
 
-  # Phase 2: Variable Extraction
-  #- path: hooks/vault-vars-extractor
-  #  when: "{{ args.deployment_phase == 'phase2' and target.args.vault_cluster == target.context }}"
-  #- barrier: true
-
-  # # Phase 3: Vault and VSO Set up
-  - path: 02-third-party/02-vso/operator
-    when: "{{ args.deployment_phase in ['phase3', 'phase4'] and target.args.app_cluster == target.context }}"
-  - barrier: true
+  # Vault setup
   - path: 03-vault-setup
     when: "{{ args.deployment_phase == 'phase3' and target.args.vault_cluster == target.context  }}"
   - barrier: true
-  # # # Phase 4: Create VaultSecret
-  # - path: 04-vaultsecret
-  #   when: "{{ args.deployment_phase == 'phase4' and target.args.app_cluster == target.context }}"
+  # Deploy VSO operator
+  - path: 02-third-party/02-vso/operator
+    when: "{{ args.deployment_phase in ['phase3', 'phase4'] and target.args.app_cluster == target.context }}"
+  - barrier: true
+
+  # Create ricoberger vaultsecret
+  - path: 04-vaultsecret
+    when: "{{ args.deployment_phase == 'phase4' and target.args.app_cluster == target.context }}"
+
+# crossclusters variables
 vars:
   - file: .secrets/.vault-crosscluster-vars.yaml
