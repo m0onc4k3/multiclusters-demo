@@ -1,4 +1,3 @@
-# PHASE 1: Expose Vault via NodePort 30000 for cross-cluster access
 apiVersion: v1
 kind: Service
 metadata:
