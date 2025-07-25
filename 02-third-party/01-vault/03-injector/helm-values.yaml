@@ -1,0 +1,6 @@
+server:
+  enabled: false
+injector:
+  enabled: true
+  # externalVaultAddr: "http://vault-nodeport.ms-demo-dev.svc.cluster.local:30000"
+  externalVaultAddr: "http://{{ vault_cluster_a_ip }}:30000"

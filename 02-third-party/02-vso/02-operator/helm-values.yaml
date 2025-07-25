@@ -1,0 +1,4 @@
+vault:
+  address: "http://{{ vault_cluster_a_ip }}:30000"
+  authMethod: kubernetes
+  role: vault-secrets-operator

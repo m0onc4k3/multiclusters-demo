@@ -1,3 +1,4 @@
 resources:
-  - serviceaccount
-  - operator
+  - 01-serviceaccount
+  - 02-operator
+  - 03-vaultsecret

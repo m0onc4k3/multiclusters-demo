@@ -1,0 +1,33 @@
+# PHASE 3: Vault configuration Job (runs configure-vault.sh from ConfigMap)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-vault
+  namespace: ms-demo-{{ target.name }}
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      serviceAccountName: default
+      restartPolicy: Never
+      containers:
+        - name: vault-setup
+          image: hashicorp/vault:1.15.2
+          command: ["/bin/sh", "/vault/configure-vault.sh"]
+          volumeMounts:
+            - name: vault
+              mountPath: /vault/configure-vault.sh
+              subPath: configure-vault.sh
+            - name: vault
+              mountPath: /vault/cluster_b_ca_cert.pem
+              subPath: cluster_b_ca_cert.pem
+          env:
+            - name: VAULT_ADDR
+              value: "http://vault:8200"
+            - name: VAULT_TOKEN
+              value: "{{ vault_root_token }}"
+      volumes:
+        - name: vault
+          configMap:
+            name: vault-setup-script
+            defaultMode: 0775

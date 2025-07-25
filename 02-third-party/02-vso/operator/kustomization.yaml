@@ -1,4 +1,0 @@
-resources:
-  - deploy.yaml
-#vars:
-#  - file: ../../../.secrets/.vault-crosscluster-vars.yaml
