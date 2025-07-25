@@ -22,6 +22,10 @@ echo "=== Phase 3: Vault setup and VSO operator deployment ==="
 kluctl deploy -t $TARGET --context $VAULT_CTX --arg deployment_phase=phase3
 kluctl deploy -t $TARGET --context $APP_CTX --arg deployment_phase=phase3
 
-# Phase 3: Create ricoberber vaultsecret
+# Phase 4: Create ricoberber vaultsecret
 echo "=== Phase 4: Create and retrieve ricoberger Vaultsecret ==="
 kluctl deploy -t $TARGET --context $APP_CTX --arg deployment_phase=phase4
+
+# Phase 5: Create ricoberber vaultsecret
+kluctl deploy -t $TARGET --context $APP_CTX --arg deployment_phase=phase5
+kluctl prune -t $TARGET --context $APP_CTX --arg deployment_phase=phase5

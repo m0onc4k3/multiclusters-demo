@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ms-demo-{{ target.name }}
-  labels:
-    vault.hashicorp.com/namespace: "true"

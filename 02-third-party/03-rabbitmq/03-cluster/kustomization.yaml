@@ -1,8 +1,0 @@
-resources:
-  - https://raw.githubusercontent.com/rabbitmq/cluster-operator/main/docs/examples/hello-world/rabbitmq.yaml
-  - namespace-patch.yaml
-patches:
-  - path: patch-credentials.yaml
-    target:
-      kind: RabbitmqCluster
-      name: hello-world
