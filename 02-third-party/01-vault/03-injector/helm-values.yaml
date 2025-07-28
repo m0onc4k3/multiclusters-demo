@@ -4,3 +4,11 @@ injector:
   enabled: true
   # externalVaultAddr: "http://vault-nodeport.ms-demo-dev.svc.cluster.local:30000"
   externalVaultAddr: "http://{{ vault_cluster_a_ip }}:30000"
+
+nodeSelector:
+  kubernetes.io/hostname: cluster-b-worker
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "vault"
+    effect: "NoSchedule"

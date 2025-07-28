@@ -14,15 +14,26 @@ metadata:
       {% raw %}{{- with secret "secret/data/rabbitmq/erlang-cookie" -}}
       {{ .Data.data.cookie }}
       {{- end }}{% endraw %}
-    # Performance tuning
-    # vault.hashicorp.com/template-static-secret-render-interval: "5s"
-    # vault.hashicorp.com/agent-min-backoff: "2s"
-    # vault.hashicorp.com/agent-max-backoff: "15s"
-    # vault.hashicorp.com/agent-cache-enable: "true"
+
 spec:
+  replicas: 1
+  # override:
+  #   statefulSet:
+  #     spec:
+  #       template:
+  #         spec:
+  #           nodeSelector:
+  #             kubernetes.io/hostname: cluster-b-worker2
+  #           tolerations:
+  #             - key: "dedicated"
+  #               operator: "Equal"
+  #               value: "rabbitmq"
+  #               effect: "NoSchedule"
+
   secretBackend:
     vault:
       defaultUserPath: "secret/data/rabbitmq/config"
       role: rabbitmq
       annotations:
         vault.hashicorp.com/template-static-secret-render-interval: "15s"
+        vault.hashicorp.com/agent-cache-enable: "true"

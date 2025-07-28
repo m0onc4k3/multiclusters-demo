@@ -7,3 +7,6 @@ gcloud/
 devbox.json
 devbox.lock
 hooks/
+rabbitmqcrd.json
+rabbitmqcrd.yaml
+rediscrd.json

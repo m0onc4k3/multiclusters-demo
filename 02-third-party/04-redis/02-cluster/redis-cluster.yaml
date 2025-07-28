@@ -1,0 +1,28 @@
+apiVersion: app.redislabs.com/v1
+kind: RedisEnterpriseCluster
+metadata:
+  name: redis-enterprise
+  namespace: ms-demo-{{ target.name }}
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "redis"
+    vault.hashicorp.com/vault-addr: "http://{{ vault_cluster_a_ip }}:30000"
+    vault.hashicorp.com/agent-inject-secret-config: "secret/data/redis/config"
+    vault.hashicorp.com/agent-inject-template-config: |
+      {% raw %}{{- with secret "secret/data/redis/config" -}}
+      {{ .Data.data.config }}
+      {{- end }}{% endraw %}
+spec:
+  nodes: 3  # Adjust to 1 for testing if resource constraints
+  # override:
+  #   statefulSet:
+  #     spec:
+  #       template:
+  #         spec:
+  #           nodeSelector:
+  #             kubernetes.io/hostname: cluster-b-worker3
+  #           tolerations:
+  #             - key: "dedicated"
+  #               operator: "Equal"
+  #               value: "redis"
+  #               effect: "NoSchedule"
