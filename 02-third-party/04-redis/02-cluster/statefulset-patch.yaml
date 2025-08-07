@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-enterprise
+  namespace: ms-demo-dev
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis-enterprise-node
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - /opt/redislabs/bin/python3 /opt/redislabs/shared/health_check.py
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3

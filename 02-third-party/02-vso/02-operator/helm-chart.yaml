@@ -1,0 +1,7 @@
+helmChart:
+  chartName: vault-secrets-operator
+  chartVersion: 2.7.0
+  namespace: ms-demo-{{ target.name }}
+  output: deploy.yaml
+  releaseName: vault-secrets-operator
+  repo: https://ricoberger.github.io/helm-charts

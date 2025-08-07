@@ -1,0 +1,39 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: RabbitmqCluster
+metadata:
+  name: vault-default-user
+  namespace: ms-demo-{{ target.name }}
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/role: "rabbitmq"
+    #vault.hashicorp.com/vault-addr: "http://vault-nodeport.ms-demo-dev.svc.cluster.local:30000"
+    vault.hashicorp.com/vault-addr: "http://{{ vault_cluster_a_ip }}:30000"
+    # Secret-specific annotations
+    vault.hashicorp.com/agent-inject-secret-erlang-cookie: "secret/data/rabbitmq/erlang-cookie"
+    vault.hashicorp.com/agent-inject-template-erlang-cookie: |
+      {% raw %}{{- with secret "secret/data/rabbitmq/erlang-cookie" -}}
+      {{ .Data.data.cookie }}
+      {{- end }}{% endraw %}
+
+spec:
+  replicas: 1
+  # override:
+  #   statefulSet:
+  #     spec:
+  #       template:
+  #         spec:
+  #           nodeSelector:
+  #             kubernetes.io/hostname: cluster-b-worker2
+  #           tolerations:
+  #             - key: "dedicated"
+  #               operator: "Equal"
+  #               value: "rabbitmq"
+  #               effect: "NoSchedule"
+
+  secretBackend:
+    vault:
+      defaultUserPath: "secret/data/rabbitmq/config"
+      role: rabbitmq
+      annotations:
+        vault.hashicorp.com/template-static-secret-render-interval: "15s"
+        vault.hashicorp.com/agent-cache-enable: "true"

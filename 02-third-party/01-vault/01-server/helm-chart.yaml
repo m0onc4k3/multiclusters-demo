@@ -1,0 +1,7 @@
+helmChart:
+  chartName: vault
+  chartVersion: 0.30.0
+  namespace: ms-demo-{{ target.name }}
+  output: deploy.yaml
+  releaseName: vault
+  repo: https://helm.releases.hashicorp.com

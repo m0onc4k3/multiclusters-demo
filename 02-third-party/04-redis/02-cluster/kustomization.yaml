@@ -1,0 +1,9 @@
+resources:
+  - redis-cluster.yaml
+  - redis-cluster-service.yaml
+
+patches:
+- path: statefulset-patch.yaml
+  target:
+    kind: StatefulSet
+    name: redis-enterprise

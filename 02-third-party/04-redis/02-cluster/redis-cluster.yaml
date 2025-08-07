@@ -1,0 +1,33 @@
+apiVersion: app.redislabs.com/v1
+kind: RedisEnterpriseCluster
+metadata:
+  name: redis-enterprise
+  namespace: ms-demo-{{ target.name }}
+spec:
+  nodes: 1
+  redisEnterpriseNodeResources:
+    requests:
+      cpu: "1"
+      memory: "1.5Gi"
+    limits:
+      cpu: "2"
+      memory: "3Gi"
+  # persistentSpec:
+  #   enabled: true
+  #   volumeSize: 5Gi
+  # redisEnterpriseImageSpec:
+  #   imagePullPolicy: IfNotPresent
+  #   repository: redislabs/redis
+  #   versionTag: 7.22.0-216
+  # services:
+  #   apiService:
+  #     type: ClusterIP
+    # pdns_server:
+    #   enabled: false
+    # call_home_agent:
+    #   enabled: false
+  # servicesRiggerSpec:
+  #   databaseServiceType: cluster_ip,headless
+  #   serviceNaming: bdb_name
+  # uiServiceType: ClusterIP
+  # username: demo@redis.com

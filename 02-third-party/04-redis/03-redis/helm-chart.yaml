@@ -1,0 +1,7 @@
+helmChart:
+  chartName: redis
+  chartVersion: 2.0.3
+  namespace: ms-demo-{{ target.name }}
+  output: deploy.yaml
+  releaseName: redis
+  repo: https://groundhog2k.github.io/helm-charts/

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-setup-script
+data:
+  cluster_b_ca_cert_b64: "{{ cluster_b_ca_cert | b64encode }}"
+  configure-vault.sh: |
+    #!/bin/sh
+    set -e
+
+    VAULT_ADDR="http://vault:8200"
+    export VAULT_ADDR
+
+    echo "Waiting for Vault to be ready..."
+    until vault status; do sleep 2; done
+
+    vault auth enable kubernetes || true
+
+    # Decode the base64 CA cert (avoids YAML/shell quoting issues)
+    echo "{{ cluster_b_ca_cert_b64 }}" | base64 -d > /tmp/ca.crt
+
+    vault write auth/kubernetes/config \
+      kubernetes_host="{{ cluster_b_api }}" \
+      kubernetes_ca_cert=@/tmp/ca.crt \
+      token_reviewer_jwt="{{ token_reviewer_jwt }}" \
+      issuer="https://kubernetes.default.svc.cluster.local" || true
+
+    echo '
+    path "secret/data/*" {
+      capabilities = ["read","list"]
+    }' > /tmp/vault-secrets-operator-policy.hcl
+
+    vault policy write vault-secrets-operator /tmp/vault-secrets-operator-policy.hcl || true
+    
+    #ricoberger secrets role
+    vault write auth/kubernetes/role/vault-secrets-operator \
+      bound_service_account_names=vault-secrets-operator \
+      bound_service_account_namespaces=ms-demo-dev \
+      policies=vault-secrets-operator \
+      ttl=1h || true
+
+    vault kv put secret/clusterb password="s3cr3t-p@ssw0rd" || true
+
+    # RabbitMQ secrets
+
+    # Default user credentials
+    vault kv put secret/rabbitmq/config username="rabbitmq" password="secure-pwd1"  || true
+
+    # Erlang cookie
+    vault kv put secret/rabbitmq/erlang-cookie cookie="$(openssl rand -hex 24)" || true
+
+    echo '
+    path "secret/data/rabbitmq/config" {
+      capabilities = ["read"]
+    }' > /tmp/rabbitmq-config-policy.hcl
+
+    vault policy write rabbitmq-policy /tmp/rabbitmq-config-policy.hcl || true
+
+    echo '
+    path "secret/data/rabbitmq/erlang-cookie" {
+      capabilities = ["read","list"]
+    }' > /tmp/rabbitmq-erlang-policy.hcl
+
+    vault policy write rabbitmq-erlang-cookie /tmp/rabbitmq-erlang-policy.hcl || true
+    
+    vault write auth/kubernetes/role/rabbitmq \
+      bound_service_account_names="vault-default-user-server" \
+      bound_service_account_namespaces="ms-demo-dev" \
+      policies="rabbitmq-policy,rabbitmq-erlang-cookie" \
+      ttl="24h" || true
+    

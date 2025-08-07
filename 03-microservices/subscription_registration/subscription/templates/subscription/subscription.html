@@ -1,0 +1,12 @@
+{% extends 'subscription/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Enter the address where we can deliver your magazine</h2>
+<form method="post" id="subscription-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Subscribe" />
+</form>
+<script src="{% static 'subscription/js/auth.js' %}"></script>
+{% endblock content %}

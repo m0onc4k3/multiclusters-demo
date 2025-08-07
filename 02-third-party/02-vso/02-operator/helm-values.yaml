@@ -1,0 +1,12 @@
+vault:
+  address: "http://{{ vault_cluster_a_ip }}:30000"
+  authMethod: kubernetes
+  role: vault-secrets-operator
+
+nodeSelector:
+  kubernetes.io/hostname: cluster-b-worker 
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "vault-secrets-operator"
+    effect: "NoSchedule"
