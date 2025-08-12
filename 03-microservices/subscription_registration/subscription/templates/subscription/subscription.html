@@ -1,0 +1,18 @@
+{% extends 'subscription/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Enter the address where we can deliver your magazine</h2>
+{% if form.errors %}
+    <ul>
+    {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<form method="post" id="subscription-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Subscribe" />
+</form>
+{% endblock content %}

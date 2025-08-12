@@ -1,0 +1,3 @@
+resources:
+  - rabbitmq-cluster.yaml
+  - rabbitmq-service.yaml

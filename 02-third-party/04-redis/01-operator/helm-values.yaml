@@ -1,0 +1,9 @@
+sysctlImage:
+  enabled: true
+  command: ["/bin/sh", "-c", "sysctl -w fs.file-max=100000 && ulimit -n 100000"]
+  securityContext:
+    privileged: true
+admissionController:
+  enabled: false
+# nodeSelector:
+#   kubernetes.io/hostname: cluster-b-worker3

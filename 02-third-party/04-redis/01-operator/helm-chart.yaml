@@ -1,0 +1,7 @@
+helmChart:
+  chartName: redis-enterprise-operator
+  chartVersion: 7.22.0-11 
+  namespace: ms-demo-{{ target.name }}
+  output: deploy.yaml
+  releaseName: redis
+  repo: https://helm.redis.io/

@@ -1,0 +1,106 @@
+overrideNamespace: ms-demo-{{ target.name }}
+commonLabels:
+  examples.kluctl.io/deployment-project: "microservices-demo"
+  examples.kluctl.io/deployment-target: "{{ target.name }}"
+
+deployments:
+  # Create Namespace
+  - path: 01-namespaces
+    when: "{{ args.deployment_phase in ['phase1', 'phase3','phase4','phase5','phase6','phase7'] }}"
+  
+  - barrier: true 
+  
+  # Deploy Vault
+  - path: 02-third-party/01-vault/01-server
+    when: "{{ args.deployment_phase in ['phase1', 'phase3'] and target.args.vault_cluster == target.context }}"
+    waitReadinessObjects:
+    - kind: Service
+      name: vault-nodeport
+      namespace: ms-demo-{{ target.name }}
+    - kind: StatefulSet
+      name: vault 
+      namespace: ms-demo-{{ target.name }}
+  
+  -  barrier: true
+
+  # Create VSO serviceaccount
+  - path: 02-third-party/02-vso/01-serviceaccount
+    when: "{{ args.deployment_phase in ['phase1', 'phase3','phase4','phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  - barrier: true
+
+  # Vault setup
+  - path: 02-third-party/01-vault/02-setup
+    when: "{{ args.deployment_phase == 'phase3' and target.args.vault_cluster == target.context  }}"
+  
+  - barrier: true
+  
+  # Deploy VSO operator
+  - path: 02-third-party/02-vso/02-operator
+    when: "{{ args.deployment_phase in ['phase3', 'phase4','phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  - barrier: true
+
+  # Deploy Vault injector
+  - path: 02-third-party/01-vault/03-injector
+    when: "{{ args.deployment_phase in ['phase3', 'phase4','phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  - barrier: true
+
+  # Create ricoberger vaultsecret
+  - path: 02-third-party/02-vso/03-vaultsecret
+    when: "{{ args.deployment_phase in ['phase4','phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  # Create rabbitmq operator
+  - path: 02-third-party/03-rabbitmq/01-operator
+    when: "{{ args.deployment_phase in ['phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  - barrier: true
+
+  # Create rabbitmq cluster
+  - path: 02-third-party/03-rabbitmq/02-cluster
+    when: "{{ args.deployment_phase in ['phase5','phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+  
+  - barrier: true
+
+  # Create redis operator
+  - path: 02-third-party/04-redis/03-redis
+    when: "{{ args.deployment_phase in ['phase6','phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+
+  - barrier: true
+
+  # Create redis operator
+  # - path: 02-third-party/04-redis/01-operator
+  #   when: "{{ args.deployment_phase in ['phase6','phase7'] and target.args.app_cluster == target.context }}"
+  #   waitReadinessObjects:
+  #   - kind: Deployment
+  #     name: redis-enterprise-operator
+  #     namespace: ms-demo-{{ target.name }}
+      #timeout: 300s
+  
+  # - barrier: true
+
+  # Create redis cluster
+  # - path: 02-third-party/04-redis/02-cluster
+  #   when: "{{ args.deployment_phase in ['phase7'] and target.args.app_cluster == target.context }}"
+  #   waitReadinessObjects:
+  #   - kind: StatefulSet
+  #     name: redis-enterprise
+  #     namespace: ms-demo-{{ target.name }}
+  #     #timeout: 900s
+
+  # Create redis operator
+  - path: 02-third-party/06-django
+    when: "{{ args.deployment_phase in ['phase7'] and target.args.app_cluster == target.context }}"
+    waitReadiness: true
+
+# crossclusters variables
+vars:
+  - file: .secrets/.vault-crosscluster-vars.yaml

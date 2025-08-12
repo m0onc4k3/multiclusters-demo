@@ -1,0 +1,19 @@
+discriminator: kluctl-examples-multicluster-demo-{{ target.name }}
+
+targets:
+  - name: dev
+    context: kind-cluster-a
+    args:
+      env_type: development
+      env_name: dev
+      vault_cluster: kind-cluster-a
+      app_cluster: kind-cluster-b
+      deployment_phase: "all"
+  - name: prod
+    context: kind-cluster-c
+    args:
+      env_type: production
+      env_name: prod
+      vault_cluster: kind-cluster-c
+      app_cluster: kind-cluster-d
+      deployment_phase: "all"

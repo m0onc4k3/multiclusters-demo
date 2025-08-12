@@ -1,0 +1,4 @@
+resources:
+  - job.yaml
+  - configmap.yaml
+  - rbac.yaml

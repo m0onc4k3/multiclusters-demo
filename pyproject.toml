@@ -1,0 +1,36 @@
+[project]
+name = "multiclusters-demo"
+version = "0.1.0"
+description = "A demo project for multi-cluster Kubernetes management"
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+django = "4.2.7"                             # Or 4.1.13 — both are supported
+djangorestframework = "3.14.0"               # Compatible with Django 4.x
+pymongo = "4.7"                              # Modern version, supports Python 3.12
+celery = "5.3.6"                             # Latest in 5.x, compatible
+redis = "5.0.1"                              # Stable, works with Celery
+dnspython = "2.6.1"                          # Required for MongoDB SRV connections
+django-extensions = "3.2.3"                  # Works with Django 4.x
+flower = "2.0.1"                             # For Celery monitoring
+pytz = "2023.3.post1"                        # Legacy timezone support (Django uses zoneinfo now, but some libs need pytz)
+requests = "2.31.0"                          # Stable
+pika = "1.3.2"                               # RabbitMQ client, stable
+gunicorn = "22.0.0"
+djangorestframework-simplejwt = "5.3.1"
+django-cors-headers = "4.4.0"
+git-filter-repo = "2.47.0"
+rapidfuzz = "3.13.0"
+tenacity = "9.1.2"

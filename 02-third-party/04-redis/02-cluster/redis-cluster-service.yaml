@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-enterprise-cluster
+  namespace: ms-demo-{{ target.name }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+    - name: rest-api
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+  selector:
+    app: redis-enterprise
+    redis.io/cluster: redis-enterprise

@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "scripts": {
+    "test_subscription_api": "mocha tests/subscription_api/*.js"
+  },
+  "dependencies": {
+    "assert": "^2.1.0",
+    "dotenv": "^17.2.1",
+    "mocha": "^11.7.1",
+    "node-fetch": "^3.3.2"
+  }
+}

@@ -1,0 +1,12 @@
+{
+    "LOGIN_URL": "http://192.168.1.5:7000/api/v1/token/",
+    "API_URL": "http://192.168.1.5:7000/api/v1/addresses/",
+    "FORM_DATA": {
+      "name": "Iker Casillas",
+      "address": "Madrid",
+      "postalcode": "111111",
+      "city": "Madrid",
+      "country": "Spain",
+      "email": "casillas@madrid.com"
+    }
+  }
