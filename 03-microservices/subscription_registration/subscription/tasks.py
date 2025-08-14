@@ -57,7 +57,7 @@ def process_address_matching(form_data, access_token):
 
         if post_response.status_code == 201:
             print(f"New address inserted for {form_data['name']} | {form_data['address']}")
-            send_email_task.delay(form_data['name'], address["address"], form_data["email"])
+            send_email_task.delay(form_data['name'], form_data["address"], form_data["email"])
             return post_response.json()
         else:
             logger.error(f"Failed to insert updated data: status={post_response.status_code}, response={post_response.text}")
@@ -70,8 +70,11 @@ def process_address_matching(form_data, access_token):
 def send_email_task(name,street, email):
     send_mail(
         "Your subscription",
-        f"Dear {name},\n\nThanks for subscribing to our magazine!\n\nWe registered the subscription at
-        this address:\n{street}.\n\nAnd you'll receive the latest edition of our magazine within three days.\n\nCM Publishers",
+        f"""Dear {name},\n\nThanks for subscribing to our magazine!
+        \nWe registered the subscription at this address:
+        {street}.
+        \nAnd you'll receive the latest edition of our magazine within three days.
+        \nCM Publishers""",
         "magazine@cm-publishers.com",
         [email],
         fail_silently=False,
