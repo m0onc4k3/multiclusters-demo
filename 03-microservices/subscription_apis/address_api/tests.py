@@ -28,8 +28,6 @@ class AddressTests(APITestCase):
         cls.login_url = cls.host + reverse('token_obtain_pair')
         cls.url = cls.host + reverse('address-list-create')
         cls.address_detail_url = lambda pk: f'{cls.host}/api/addresses/{pk}/'
-        
-        # cls.mongo_client = MongoDBConnection() #collection_name=cls.test_collection_name
 
     def setUp(self):
         # Get auth token
