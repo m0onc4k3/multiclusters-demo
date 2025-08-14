@@ -71,8 +71,7 @@ def send_email_task(name,street, email):
     send_mail(
         "Your subscription",
         f"""Dear {name},\n\nThanks for subscribing to our magazine!
-        \nWe registered the subscription at this address:
-        {street}.
+        \nWe registered the subscription at this address:\n{street}.
         \nAnd you'll receive the latest edition of our magazine within three days.
         \nCM Publishers""",
         "magazine@cm-publishers.com",
