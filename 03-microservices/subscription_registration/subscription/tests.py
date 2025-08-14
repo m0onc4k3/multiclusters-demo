@@ -158,7 +158,7 @@ class MailTest(unittest.TestCase):
     # Happy path test
     def test_send_email(self):
         send_email_task.delay("D. Dhozos", 
-            # "Street 1", 
+            "Street 1", 
             "dhozos@upside.com")
 
     # Error guessing test
