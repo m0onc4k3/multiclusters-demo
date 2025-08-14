@@ -24,3 +24,5 @@ requirements.txt
 __pycache__
 test.py
 poetry.lock
+
+03-microservices/errors/
