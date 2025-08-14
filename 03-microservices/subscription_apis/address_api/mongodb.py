@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection:
     def __init__(self):
-        # self.uri = os.environ.get('MONGODB_URI', 'mongodb+srv://ac-87iyiqj-shard-00-01.g3jersh.mongodb.net/')
         self.uri = os.environ.get('MONGODB_URI', 'mongodb+srv://mongodb.g3jersh.mongodb.net/')
         
         self.cert_path = os.environ.get('MONGODB_CERT_PATH', '/home/taggioml/.ssh/X509-cert-3705830648530031648.pem')

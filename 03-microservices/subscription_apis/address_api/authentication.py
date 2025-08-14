@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class CookieJWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         access_token = request.COOKIES.get('access_token')
-        logger.info(f"Access token from cookie: {access_token}")
+        # logger.info(f"Access token from cookie: {access_token}")
         if not access_token:
             logger.error("No access token found in cookies")
             raise AuthenticationFailed('Authentication credentials were not provided.')

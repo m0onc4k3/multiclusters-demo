@@ -79,7 +79,7 @@ class AddressListCreateAPIView(APIView):
 
     def post(self, request):
         serializer = AddressSerializer(data=request.data)
-        logger.info(f"Reqyest data serialized: {serializer}")
+        # logger.info(f"Request data serialized: {serializer}")
         # access_token = request.COOKIES.get('access_token')
         
         if serializer.is_valid():

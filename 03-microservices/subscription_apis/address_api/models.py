@@ -9,6 +9,9 @@ class Address(models.Model):
     country = models.CharField(max_length=80, blank=True)
     email = models.EmailField(blank=True)
 
+    def __str__(self):
+        return self.name
+        
     def save(self, *args, **kwargs):
         # Import inside method to avoid circular import
         from .mongodb import save_address_to_mongo
