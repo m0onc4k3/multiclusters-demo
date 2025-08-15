@@ -40,9 +40,9 @@ class LoginView(FormView):
                     json={'username': username, 'password': password}
                 )
                 logger.info(f"API response status: {response.status_code}")
-                logger.info(f"API response content: {response.text}")
-                logger.info(f"API response cookies: {response.cookies.get_dict()}")
-                logger.info(f"API response headers: {dict(response.headers)}")
+                # logger.info(f"API response content: {response.text}")
+                # logger.info(f"API response cookies: {response.cookies.get_dict()}")
+                # logger.info(f"API response headers: {dict(response.headers)}")
             
                 if response.status_code == 200:
                     # Forward cookies from API to client

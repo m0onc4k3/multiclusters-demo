@@ -19,8 +19,8 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         if response.status_code == 200:
             access_token = response.data['access']
             refresh_token = response.data['refresh']
-            logger.info(f"Access token: {access_token}")
-            logger.info(f"Refresh token: {refresh_token}")
+            # logger.info(f"Access token: {access_token}")
+            # logger.info(f"Refresh token: {refresh_token}")
             response.set_cookie(
                 key='access_token',
                 value=access_token,
