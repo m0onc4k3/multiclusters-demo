@@ -1,16 +1,62 @@
 import unittest
-
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi 
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
-
 import os
 from time import sleep
+
+from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError, AutoReconnect
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
+from dotenv import load_dotenv
+from bson import ObjectId
+from pprint import pprint
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '../', '.env'))
+
+class MongoDBConnection:
+    def __init__(self):
+        self.uri = os.environ.get('MONGODB_URI')   
+        self.cert_path = os.environ.get('MONGODB_CERT_PATH')
+        self.db_name = os.environ.get('MONGODB_DB_NAME')
+        self.collection_name = os.environ.get('MONGODB_COLLECTION')
+        self.client = None
+        self.db = None
+        self.collection = None
+        self.connect()
+
+    @retry(
+        stop=stop_after_attempt(3),
+        # stop=stop_after_attempt(10),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type((ServerSelectionTimeoutError, AutoReconnect)),
+        before_sleep=lambda retry_state: logger.warning(f"Retrying MongoDB connection: attempt {retry_state.attempt_number}")
+    )
+    def connect(self):
+        """Establish MongoDB connection with TLS and X509 authentication"""
+        try:
+            self.client = MongoClient(
+                self.uri,
+                tls=True,
+                tlsCertificateKeyFile=self.cert_path,
+                authSource='$external',
+                authMechanism='MONGODB-X509',
+                serverSelectionTimeoutMS=30000,
+                retryWrites=True,
+                w='majority',
+            )
+            self.db = self.client[self.db_name]
+            self.collection = self.db[self.collection_name]
+            self.client.admin.command('ping')
+            print("MongoDB connection established")
+        except ServerSelectionTimeoutError as e:
+            print(f"MongoDB connection failed: {str(e)}")
+            raise
 
 class SubscriptionTests(unittest.TestCase):
     @classmethod
@@ -21,6 +67,9 @@ class SubscriptionTests(unittest.TestCase):
         # cls.options.add_argument("--disable-dev-shm-usage")
         # cls.driver = webdriver.Firefox(options=cls.options)
         cls.base_url = "http://localhost:8000"
+        cls.testuser = 'testuser'
+        cls.wrongpassword = 'testpass'
+        cls.testpassword = 'testpass123'
 
 
     def setUp(self):
@@ -42,6 +91,7 @@ class SubscriptionTests(unittest.TestCase):
 
     def debug_capture(self, name):
         """Helper method to capture screenshots during tests"""
+        current_directory = os.getcwd()
         path = f"errors/debug_{name}.png"
         self.driver.save_screenshot(path)
         self.debug_screenshots.append(path)
@@ -49,12 +99,12 @@ class SubscriptionTests(unittest.TestCase):
 
     def test_invalid_login(self):
         """Test failed login scenario"""
-        wronguser = 'testuser'
-        wrongpassword = 'testpass'
+        # wronguser = 'testuser'
+        # wrongpassword = 'testpass'
         try:
             # Enter invalid credentials
-            self.driver.find_element(By.ID, 'id_username').send_keys(wronguser)
-            self.driver.find_element(By.ID, 'id_password').send_keys(wrongpassword)
+            self.driver.find_element(By.ID, 'id_username').send_keys(self.testuser)
+            self.driver.find_element(By.ID, 'id_password').send_keys(self.wrongpassword)
             self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
 
             # Verification
@@ -81,8 +131,8 @@ class SubscriptionTests(unittest.TestCase):
 
         try:
             # Enter valid credentials
-            self.driver.find_element(By.ID, "id_username").send_keys('testuser')
-            self.driver.find_element(By.ID, "id_password").send_keys('testpass123')
+            self.driver.find_element(By.ID, "id_username").send_keys(self.testuser)
+            self.driver.find_element(By.ID, "id_password").send_keys(self.testpassword)
             self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
             
             # Verify successful navigation to address page
@@ -105,8 +155,8 @@ class SubscriptionTests(unittest.TestCase):
 
         try:
             # Enter valid credentials
-            self.driver.find_element(By.ID, "id_username").send_keys('testuser')
-            self.driver.find_element(By.ID, "id_password").send_keys('testpass123')
+            self.driver.find_element(By.ID, "id_username").send_keys(self.testuser)
+            self.driver.find_element(By.ID, "id_password").send_keys(self.testpassword)
             self.driver.find_element(By.CSS_SELECTOR, "input[type='submit']").click()
             
             # Verify successful navigation to address page
@@ -124,7 +174,7 @@ class SubscriptionTests(unittest.TestCase):
             self.driver.find_element(By.ID, "id_postalcode").send_keys('BN15 9FP')
             self.driver.find_element(By.ID, "id_city").send_keys('Lancing')
             self.driver.find_element(By.ID, "id_country").send_keys('England')
-            self.driver.find_element(By.ID, "id_email").send_keys('cbaleba@brighton.com')
+            self.driver.find_element(By.ID, "id_email").send_keys('test@test.com')
             self.driver.find_element(By.XPATH, "//input[@type='submit' and @value='Subscribe']").click()
 
             # Verify successful navigation to address page
@@ -135,7 +185,25 @@ class SubscriptionTests(unittest.TestCase):
                 )
             )
             print("\n✔️  Successfully completed full subscription flow")
-            
+
+            sleep(10)
+            # Connect to production collection
+            test_client = MongoDBConnection()
+            document = test_client.collection.find_one({"email": 'test@test.com'})
+            print("\n=== MongoDB Document Before Deletion ===")
+            pprint(document)  # Pretty-print the full document
+            print("===\n")
+
+            # Verify document content
+            self.assertIsNotNone(document, "Document should exist in MongoDB")
+            self.assertEqual(document['address'], '60 Mash Barn Ln')
+
+            # Cleanup
+            created_id = document['_id']
+            delete_result = test_client.collection.delete_one({"_id": ObjectId(created_id)})
+            print(f"Deleted {delete_result.deleted_count} document(s)")
+            test_client.client.close()
+
         except Exception as e:
             self.debug_capture("full_submission_failure")
             raise
