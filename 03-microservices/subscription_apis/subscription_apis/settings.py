@@ -17,13 +17,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'corsheaders',  # New
+    'corsheaders',
     'address_api',
+    'whitenoise.runserver_nostatic',  # Add for whitenoise
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # New: Must be first
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add for whitenoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -129,6 +131,11 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
-#STATICFILES_DIRS = [BASE_DIR / 'address_api/static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # Add this: Directory for collected static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # Use whitenoise
+
+# Uncomment and adjust STATICFILES_DIRS if you add app-specific static files later
+# STATICFILES_DIRS = [BASE_DIR / 'address_api/static']
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

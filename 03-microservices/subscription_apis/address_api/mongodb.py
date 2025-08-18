@@ -10,7 +10,7 @@ class MongoDBConnection:
     def __init__(self):
         self.uri = os.environ.get('MONGODB_URI', 'mongodb+srv://mongodb.g3jersh.mongodb.net/')
         
-        self.cert_path = os.environ.get('MONGODB_CERT_PATH', '/home/taggioml/.ssh/X509-cert-3705830648530031648.pem')
+        self.cert_path = os.environ.get('MONGODB_CERT_PATH', '/app/certs/mongodb.pem') #'/home/taggioml/.ssh/X509-cert-3705830648530031648.pem')
         self.db_name = os.environ.get('MONGODB_DB_NAME', 'Subscription')
         self.collection_name = os.environ.get('MONGODB_COLLECTION', 'address')
         self.client = None
