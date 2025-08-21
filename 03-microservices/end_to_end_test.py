@@ -169,7 +169,7 @@ class SubscriptionTests(unittest.TestCase):
             # print("\n✔️ Successfully reached address entry page")
             
             # Continue with address entry test...
-            self.driver.find_element(By.ID, "id_name").send_keys('Carlos Baleba')
+            self.driver.find_element(By.ID, "id_name").send_keys('Julio Enciso')
             self.driver.find_element(By.ID, "id_address").send_keys('60 Mash Barn Ln')
             self.driver.find_element(By.ID, "id_postalcode").send_keys('BN15 9FP')
             self.driver.find_element(By.ID, "id_city").send_keys('Lancing')
