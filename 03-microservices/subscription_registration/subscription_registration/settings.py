@@ -54,7 +54,13 @@ SECRET_KEY = 'django-insecure-)-)82c*wv5tilddk*rml85$x*-gg49!2%(ws%sk+^^u-4er$zg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*', '192.168.1.6','127.0.0.1']
+ALLOWED_HOSTS = [
+    '*', 
+    '192.168.1.6',
+    '127.0.0.1',
+    '192.168.1.7',
+    'subscription-apis'
+    ]
 
 # Application definition
 INSTALLED_APPS = [
@@ -65,7 +71,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'subscription',
-    'celery'
+    'celery',
+    'whitenoise.runserver_nostatic',  # Add for whitenoise
 ]
 
 # Email setting
@@ -77,6 +84,7 @@ CELERY_RESULT_BACKEND = "redis://localhost:6379"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add for whitenoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -202,11 +210,14 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'subscription/static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # New: Directory for collected static files
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # Use whitenoise
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = f'redis://{os.environ.get("REDIS_HOST", "my-redis")}:6379/0'
+CELERY_RESULT_BACKEND = f'redis://{os.environ.get("REDIS_HOST", "my-rediss")}:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

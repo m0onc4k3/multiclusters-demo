@@ -2,11 +2,12 @@
 from celery import shared_task
 from django.core.mail import send_mail
 from rapidfuzz import fuzz
-from subscription.models import Address
+#from subscription.models import Address
 from .host import get_subscription_url
 from datetime import datetime
 import requests
 import logging
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 logger = logging.getLogger(__name__)
 # decorates the match_address_task function so that 
@@ -15,32 +16,47 @@ logger = logging.getLogger(__name__)
 def process_address_matching(form_data, access_token):
     # retrieve all addresses from the MongoDB collection into a Python list
     api_url = get_subscription_url()
-    #headers = {'Cookie': f'access_token={access_token}'}
+    logger.info(f'API URL: {api_url}\nACCESS TOKEN: {access_token}')
+    cookies = {'access_token': access_token}
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        before_sleep=lambda retry_state: logger.warning(f'Retrying API GET: attempt {retry_state.attempt_number}')
+    )
+    def get_addresses():
+        response = requests.get(api_url, cookies=cookies)
+        if response.status_code != 200:
+            raise requests.RequestException(f'Failed to fetch addresses: status={response.status_code}')
+        return response.json()
+    
     try:
-        response = requests.get(api_url, cookies={'access_token': access_token})
-        logger.info(f"GET response status: {response.status_code}")
-        # print('GET RESPONSE',response.status_code)
+        addresses = get_addresses()
+        current_address = form_data['address']
+
+        # response = requests.get(api_url, cookies={'access_token': access_token})
+        # logger.info(f"GET response status: {response.status_code}")
+        # # print('GET RESPONSE',response.status_code)
 
         best_match = form_data["address"]
         best_score = 0
         min_score = 70
 
-        if response.status_code == 200:
-            addresses = response.json()
-            current_address = form_data["address"]
+        # if response.status_code == 200:
+        #     addresses = response.json()
+        #     current_address = form_data["address"]
 
-            for addr in addresses:
-                if 'address' in addr and addr['address']:
-                    score = fuzz.ratio(current_address, addr["address"])
-                    if score > best_score and score >= min_score:
-                        best_score = score
-                        best_match = addr["address"]
-                    if best_score == 100:
-                        break
-        else:
-            logger.error(f"Failed to fetch addresses: status={response.status_code}, response={response.text}")
+        for addr in addresses:
+            if 'address' in addr and addr['address']:
+                score = fuzz.ratio(current_address, addr["address"])
+                if score > best_score and score >= min_score:
+                    best_score = score
+                    best_match = addr["address"]
+                if best_score == 100:
+                    break
+        # else:
+        #     logger.error(f"Failed to fetch addresses: status={response.status_code}, response={response.text}")
     except requests.RequestException as e:
-        logger.error(f"GET request failed: {str(e)}")
+        logger.error(f"GET request failed after retries: {str(e)}")
         best_match = form_data["address"]  # Fallback to original address
 
     # Post Updated data to API
@@ -50,28 +66,43 @@ def process_address_matching(form_data, access_token):
     
     form_data["created_at"] = datetime.utcnow().isoformat()
     
-    try:
-        post_response = requests.post(api_url, json=form_data, cookies={'access_token': access_token})
-        logger.info(f"POST response status: {post_response.status_code}")
-        logger.debug(f"POST response content: {post_response.text}")
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(requests.RequestException),
+        before_sleep=lambda retry_state: logger.warning(f'Retrying API GET: attempt {retry_state.attempt_number}')
+    )
 
-        if post_response.status_code == 201:
-            print(f"New address inserted for {form_data['name']} | {form_data['address']}")
-            send_email_task.delay(form_data['name'], form_data["address"], form_data["email"])
-            return post_response.json()
-        else:
-            logger.error(f"Failed to insert updated data: status={post_response.status_code}, response={post_response.text}")
-            return {"error": f"POST failed with status {post_response.status_code}"}
+    def post_address():
+        post_response = requests.post(api_url, json=form_data, cookies=cookies)
+        if post_response.status_code != 201:
+            raise requests.RequestException(f'Failed to insert updated data: status={post_response.status_code}')
+        return post_response.json()
+    
+    try:
+        # post_response = requests.post(api_url, json=form_data, cookies={'access_token': access_token})
+        post_result = post_address()
+        print(f'New address inserted for {form_data["name"]} | {form_data["address"]}')
+        # logger.info(f"POST response status: {post_response.status_code}")
+        # logger.debug(f"POST response content: {post_response.text}")
+
+        # if post_response.status_code == 201:
+        #     print(f"New address inserted for {form_data['name']} | {form_data['address']}")
+        send_email_task.delay(form_data['name'], form_data['address'], form_data['email'])
+        return post_result
+        # else:
+        #     logger.error(f"Failed to insert updated data: status={post_response.status_code}, response={post_response.text}")
+        #     return {"error": f"POST failed with status {post_response.status_code}"}
     except requests.RequestException as e:
-        logger.error(f"POST request failed: {str(e)}")
+        logger.error(f"POST request failed after retries: {str(e)}")
         return {"error": str(e)}
 
 @shared_task
-def send_email_task(name,street, email):
+def send_email_task(name, address, email):
     send_mail(
         "Your subscription",
         f"""Dear {name},\n\nThanks for subscribing to our magazine!
-        \nWe registered the subscription at this address:\n{street}.
+        \nWe registered the subscription at this address:\n{address}.
         \nAnd you'll receive the latest edition of our magazine within three days.
         \nCM Publishers""",
         "magazine@cm-publishers.com",

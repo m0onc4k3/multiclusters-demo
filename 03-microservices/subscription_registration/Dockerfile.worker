@@ -1,0 +1,35 @@
+# Stage 1: Builder
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install OS dependencies for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+# COPY requirements.txt .
+RUN pip install --no-cache-dir \
+    django==4.2.7 \
+    celery==5.3.6 \
+    redis==5.0.3 \
+    rapidfuzz==3.6.2 \
+    requests==2.31.0 \
+    tenacity==8.2.3
+
+# Copy code
+COPY subscription/ subscription/
+COPY subscription_registration/ subscription_registration/
+
+# Create non-root user for security
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    DJANGO_SETTINGS_MODULE=subscription_registration.settings_worker
+
+# Run celery worker
+CMD ["celery", "-A", "subscription_registration", "worker", "-l", "info"]
