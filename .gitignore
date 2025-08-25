@@ -12,6 +12,7 @@
 03-microservices/subscription_registration/subscription/migrations/
 03-microservices/subscription_registration/subscription_registration/__pycache__/
 03-microservices/subscription_registration/db.sqlite3
+03-microservices/certs/
 
 bin/
 gcloud/
@@ -26,3 +27,5 @@ test.py
 poetry.lock
 
 03-microservices/errors/
+03-microservices/certs.sh
+03-microservices/subscription_registration/data/
