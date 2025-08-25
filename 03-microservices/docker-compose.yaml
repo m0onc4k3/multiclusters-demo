@@ -1,0 +1,99 @@
+services:
+  # Keycloak service
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8443"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./certs/keycloak.crt:/etc/keycloak.crt:ro
+      - ./certs/keycloak.key:/etc/keycloak.key:ro
+      - keycloak_data:/opt/keycloak/data
+      - keycloak_config:/opt/keycloak/conf
+    command: start
+      --hostname=https://192.168.1.3:8080
+      --https-certificate-file=/etc/keycloak.crt
+      --https-certificate-key-file=/etc/keycloak.key
+      --http-enabled=false
+    networks:
+      - my-network
+
+  # Redis service
+  my-redis:
+    image: amd64/redis:alpine
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - my-network
+
+  # Subscription APIs service
+  subscription-apis:
+    image: ghcr.io/m0onc4k3/subscription_apis:latest
+    container_name: subscription-apis
+    ports:
+      - "7000:7000"
+    environment:
+      - KEYCLOAK_SERVER_URL=https://keycloak:8443
+      - KEYCLOAK_REALM=subscription_realm
+      - KEYCLOAK_CLIENT_ID=subscription_client
+      - KEYCLOAK_CA_CERT=/app/certs/keycloak.crt
+    volumes:
+      - ./certs/keycloak.crt:/app/certs/keycloak.crt:ro
+      - ${HOME}/.ssh/X509-cert-3705830648530031648.pem:/app/certs/mongodb.pem:ro
+    # configs:
+    #   - source: mongodb_x509_cert
+    #     target: /app/certs/mongodb.pem
+    #     mode: 0440 # Read-only permissions
+    depends_on:
+      - keycloak
+    networks:
+      - my-network
+
+  # Subscription Registration Web service
+  subscription-registration:
+    image: ghcr.io/m0onc4k3/subscription_registration_web:latest
+    container_name: subscription-registration
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=my-redis
+      - SUBSCRIPTION_APIS_HOST=subscription-apis
+    volumes:
+      - ./certs:/app/certs:ro
+      - ./subscription_registration/data:/app/data
+    depends_on:
+      - my-redis
+      - subscription-apis
+    networks:
+      - my-network
+
+  # Celery Worker service
+  celery-worker:
+    image: ghcr.io/m0onc4k3/subscription_registration_worker:latest
+    container_name: celery-worker
+    environment:
+      - REDIS_HOST=my-redis
+      - SUBSCRIPTION_APIS_HOST=subscription-apis
+    depends_on:
+      - my-redis
+      - subscription-apis
+    networks:
+      - my-network
+
+volumes:
+  keycloak_data:
+  keycloak_config:
+
+# configs:
+#   mongodb_x509_cert:
+#     file: ${HOME}/.ssh/X509-cert-3705830648530031648.pem
+
+networks:
+  my-network:
+    driver: bridge
+    name: my-network
+    external: true
