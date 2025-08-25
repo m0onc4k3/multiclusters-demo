@@ -184,6 +184,7 @@ class SubscriptionTests(unittest.TestCase):
                     "Thanks!"
                 )
             )
+            self.debug_capture("Reached_Success_Page")
             print("\n✔️  Successfully completed full subscription flow")
 
             sleep(10)
