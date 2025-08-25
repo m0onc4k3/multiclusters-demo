@@ -20,13 +20,18 @@ RUN python manage.py makemigrations
 RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
+# Ensure db.sqlite3 is created and writable
+RUN touch db.sqlite3 && chmod 664 db.sqlite3
+# RUN mkdir -p /app/sessions && chmod 775 /app/sessions
+RUN mkdir -p /app/certs && chmod 775 /app/certs
+
 # Stage 2: Runtime
 FROM python:3.12-slim
 
 WORKDIR /app
 
 # Create non-root user for security
-RUN useradd -m appuser && chown -R appuser /app
+RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Copy installed dependencies from builder
@@ -35,6 +40,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code and collect static
 COPY --from=builder /app /app
+
+# Copy certificates
+# COPY certs/subscription_registration.crt /app/certs/subscription_registration.crt
+# COPY certs/subscription_registration.key /app/certs/subscription_registration.key
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
@@ -45,4 +54,7 @@ ENV DJANGO_SETTINGS_MODULE=subscription_registration.settings
 EXPOSE 8000
 
 # Run with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "subscription_registration.wsgi:application"]
+#CMD ["gunicorn", "--bind", "0.0.0.0:8000", "subscription_registration.wsgi:application"]
+
+# Run Gunicorn with HTTPS
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--certfile", "/app/certs/subscription_registration.crt", "--keyfile", "/app/certs/subscription_registration.key", "subscription_registration.wsgi:application"]

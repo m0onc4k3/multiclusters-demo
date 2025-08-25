@@ -6,7 +6,7 @@ from django.urls import include, path
 app_name = "subscription"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    #path("admin/", admin.site.urls),
     path("", include("subscription.urls")),
     #path("subscription/", SubscriptionFormView.as_view(), name="subscription"),
     #path("success/", SuccessView.as_view(), name="success"),
