@@ -1,43 +1,39 @@
 import os
 from pathlib import Path
-from datetime import timedelta
+#from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-your-secret-key-here')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
-    #'*',
     '127.0.0.1', 
     'localhost', 
+    '192.168.1.3',
+    '192.168.1.5',
     '192.168.1.6',
-    '192.168.1.2',
     '192.168.1.7',
-    'subscription-apis'
+    'subscription-apis',
+    'keycloak',
     ]
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt',
-    'corsheaders',
     'address_api',
     'whitenoise.runserver_nostatic',  # Add for whitenoise
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # New: Must be first
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add for whitenoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -53,7 +49,6 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
@@ -62,45 +57,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'subscription_apis.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+DATABASES = {}
 
-}
-
+# In subscription_apis/settings.py
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'address_api.authentication.KeycloakJWTAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'address_api.authentication.CookieJWTAuthentication',  # New: Custom auth
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-}
-
-
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8000',  # subscription_registration app
-    'http://192.168.1.5:8000',  # New: Allow subscription_registration on LAN
-]
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True  # Allow cookies
-CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
-CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization']
-CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:8000',
-    'http://192.168.1.5:8000',  # New: Allow CSRF from LAN
-]
+# Keycloak settings
+KEYCLOAK_SERVER_URL = 'https://keycloak:8443'
+KEYCLOAK_REALM = 'subscription_realm'
+KEYCLOAK_CLIENT_ID = 'subscription_client'
 
 LOGGING = {
     'version': 1,
@@ -118,20 +90,7 @@ LOGGING = {
     },
 }
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
