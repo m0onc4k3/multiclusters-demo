@@ -9,10 +9,7 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     '127.0.0.1', 
     'localhost', 
-    '192.168.1.3',
-    '192.168.1.5',
-    '192.168.1.6',
-    '192.168.1.7',
+    f'{os.environ.get("HOST_IP")}',
     'subscription-apis',
     'keycloak',
     ]

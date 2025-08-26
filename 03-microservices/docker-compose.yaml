@@ -8,13 +8,14 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
+      - HOST_IP=${HOST_IP}
     volumes:
       - ./certs/keycloak.crt:/etc/keycloak.crt:ro
       - ./certs/keycloak.key:/etc/keycloak.key:ro
       - keycloak_data:/opt/keycloak/data
       - keycloak_config:/opt/keycloak/conf
     command: start
-      --hostname=https://192.168.1.3:8080
+      --hostname=https://${HOST_IP}:8080
       --https-certificate-file=/etc/keycloak.crt
       --https-certificate-key-file=/etc/keycloak.key
       --http-enabled=false
@@ -41,6 +42,7 @@ services:
       - KEYCLOAK_REALM=subscription_realm
       - KEYCLOAK_CLIENT_ID=subscription_client
       - KEYCLOAK_CA_CERT=/app/certs/keycloak.crt
+      - HOST_IP=${HOST_IP}
     volumes:
       - ./certs/keycloak.crt:/app/certs/keycloak.crt:ro
       - ${HOME}/.ssh/X509-cert-3705830648530031648.pem:/app/certs/mongodb.pem:ro
@@ -62,6 +64,7 @@ services:
     environment:
       - REDIS_HOST=my-redis
       - SUBSCRIPTION_APIS_HOST=subscription-apis
+      - HOST_IP=${HOST_IP}
     volumes:
       - ./certs:/app/certs:ro
       - ./subscription_registration/data:/app/data
@@ -78,6 +81,7 @@ services:
     environment:
       - REDIS_HOST=my-redis
       - SUBSCRIPTION_APIS_HOST=subscription-apis
+      - HOST_IP=${HOST_IP}
     depends_on:
       - my-redis
       - subscription-apis

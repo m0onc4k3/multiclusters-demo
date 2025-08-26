@@ -57,10 +57,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '192.168.1.3', 
-    '192.168.1.5',
-    '192.168.1.6',
-    '192.168.1.7',
+    f'{os.environ.get("HOST_IP")}',
     'subscription-apis',
     'keycloak',
     ]
@@ -78,13 +75,6 @@ INSTALLED_APPS = [
     #'whitenoise.runserver_nostatic',  # Add for whitenoise
     #'oauthlib.integrations.django',  # For OAuth KeyCloak
 ]
-
-# Email setting
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# Celery settings
-# CELERY_BROKER_URL = "redis://localhost:6379"
-# CELERY_RESULT_BACKEND = "redis://localhost:6379"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -226,13 +216,6 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-suffix',
-#     }
-# }
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
@@ -240,12 +223,13 @@ CACHES = {
     }
 }
 
+
 # Keycloak settings
-KEYCLOAK_SERVER_URL = 'https://192.168.1.3:8080'
+KEYCLOAK_SERVER_URL = f'https://{os.environ.get("HOST_IP")}:8080'
 KEYCLOAK_REALM = 'subscription_realm'
 KEYCLOAK_CLIENT_ID = 'subscription_client'
 KEYCLOAK_CLIENT_SECRET = 'qp8IdX5eXdMAlHj8vNjo7XN3kgWSkqqa'  # From Keycloak client
-KEYCLOAK_REDIRECT_URI = 'https://192.168.1.3:8000/oidc/callback/'
+KEYCLOAK_REDIRECT_URI = f'https://{os.environ.get("HOST_IP")}:8000/oidc/callback/'
 
 # Secure session and CSRF settings for HTTPS
 SESSION_COOKIE_SECURE = True
