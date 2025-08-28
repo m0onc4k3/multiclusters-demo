@@ -14,6 +14,7 @@ services:
       - ./certs/keycloak.key:/etc/keycloak.key:ro
       - keycloak_data:/opt/keycloak/data
       - keycloak_config:/opt/keycloak/conf
+      - ./keycloak_themes/my-theme:/opt/keycloak/themes/my-theme
     command: start
       --hostname=https://${HOST_IP}:8080
       --https-certificate-file=/etc/keycloak.crt
